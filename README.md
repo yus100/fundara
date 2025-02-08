@@ -1,0 +1,2 @@
+# fundara
+ai research crowdfunding
