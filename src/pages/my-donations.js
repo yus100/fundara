@@ -3,11 +3,15 @@ import Navbar from '../components/Navbar';
 import clientPromise from '../lib/mongodb';
 import { getAuth } from '@clerk/nextjs/server';
 import { ObjectId } from 'mongodb';
+import { useRouter } from 'next/router';
 
 export default function MyDonations({ donationsWithProject }) {
+  const router = useRouter();
+
   return (
     <div style={{ padding: '20px' }}>
       <Navbar />
+
       <h1>My Donations</h1>
       {donationsWithProject.length === 0 ? (
         <p>You have not made any donations yet.</p>
@@ -16,6 +20,7 @@ export default function MyDonations({ donationsWithProject }) {
           {donationsWithProject.map((donation) => (
             <div
               key={donation._id}
+              onClick={() => router.push(`/projects/${donation.project._id}`)}
               style={{
                 border: '1px solid #ddd',
                 padding: '20px',
@@ -23,6 +28,7 @@ export default function MyDonations({ donationsWithProject }) {
                 width: '300px',
                 borderRadius: '8px',
                 boxShadow: '2px 2px 6px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
               }}
             >
               <h2>{donation.project?.title || 'Unknown Project'}</h2>

@@ -1,10 +1,12 @@
 // pages/index.js
+import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import Navbar from '../components/Navbar';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home({ initialProjects }) {
+  const router = useRouter();
   const { data, error, mutate } = useSWR('/api/projects', fetcher, {
     fallbackData: { projects: initialProjects },
   });
@@ -14,7 +16,15 @@ export default function Home({ initialProjects }) {
 
   const { projects } = data;
 
-  async function handleDonate(projectId) {
+  // Navigate to the project detail page
+  function handleCardClick(projectId) {
+    router.push(`/projects/${projectId}`);
+  }
+
+  async function handleDonate(e, projectId) {
+    // Prevent the card's click event from firing
+    e.stopPropagation();
+
     const amount = prompt('Enter donation amount:');
     if (!amount) return;
     try {
@@ -27,7 +37,7 @@ export default function Home({ initialProjects }) {
         alert('Donation failed!');
       } else {
         alert('Donation successful!');
-        // Refresh projects data to show updated donation totals
+        // Refresh the projects to show updated donation totals
         mutate();
       }
     } catch (error) {
@@ -44,6 +54,7 @@ export default function Home({ initialProjects }) {
         {projects.map((project) => (
           <div
             key={project._id}
+            onClick={() => handleCardClick(project._id)}
             style={{
               border: '1px solid #ddd',
               padding: '20px',
@@ -51,6 +62,7 @@ export default function Home({ initialProjects }) {
               width: '300px',
               borderRadius: '8px',
               boxShadow: '2px 2px 6px rgba(0,0,0,0.1)',
+              cursor: 'pointer',
             }}
           >
             <img
@@ -64,7 +76,7 @@ export default function Home({ initialProjects }) {
               }}
             />
             <h2>{project.title}</h2>
-            <p>{project.description}</p>
+            <p>{project.description.slice(0, 100)}...</p>
             <div style={{ margin: '10px 0' }}>
               <div
                 style={{
@@ -87,8 +99,9 @@ export default function Home({ initialProjects }) {
                 ${project.donated} raised of ${project.goal}
               </p>
             </div>
+            {/* Donate button: stop propagation so clicking it doesn’t trigger card click */}
             <button
-              onClick={() => handleDonate(project._id)}
+              onClick={(e) => handleDonate(e, project._id)}
               style={{
                 padding: '10px 20px',
                 background: '#0070f3',
@@ -107,7 +120,6 @@ export default function Home({ initialProjects }) {
   );
 }
 
-// Pre-render the page with data from MongoDB
 export async function getServerSideProps() {
   const clientPromise = (await import('../lib/mongodb')).default;
   const client = await clientPromise;
