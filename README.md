@@ -1,6 +1,3 @@
-# fundara
-ai research crowdfunding
-
 
 
 # Fundura
