@@ -1,10 +1,11 @@
 // pages/index.js
 import useSWR from 'swr';
+import Navbar from '../components/Navbar';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home({ initialProjects }) {
-  // Using SWR to revalidate data on the client side
+  // Use SWR for client-side fetching and revalidation
   const { data, error } = useSWR('/api/projects', fetcher, {
     fallbackData: { projects: initialProjects },
   });
@@ -16,6 +17,7 @@ export default function Home({ initialProjects }) {
 
   return (
     <div style={{ padding: '20px' }}>
+      <Navbar />
       <h1>Crowdfunding Projects</h1>
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         {projects.map((project) => (
@@ -83,20 +85,14 @@ export default function Home({ initialProjects }) {
     </div>
   );
 
-  // This is a placeholder for your donation logic.
+  // Placeholder donation logic
   function handleDonate(projectId) {
     alert(`Donate button clicked for project ${projectId}`);
   }
 }
 
-// You can fetch the initial data on the server side so the page is pre-rendered.
+// Pre-render the page with data from MongoDB
 export async function getServerSideProps() {
-  // Option 1: Use the API route (make sure your server URL is correct)
-  // const res = await fetch('http://localhost:3000/api/projects');
-  // const data = await res.json();
-  // return { props: { initialProjects: data.projects } };
-
-  // Option 2: Directly fetch from MongoDB (this avoids an extra HTTP request)
   const clientPromise = (await import('../lib/mongodb')).default;
   const client = await clientPromise;
   const db = client.db('crowdfunding');
@@ -104,6 +100,7 @@ export async function getServerSideProps() {
   const projectsSerialized = projects.map((project) => ({
     ...project,
     _id: project._id.toString(),
+    createdAt: project.createdAt ? project.createdAt.toISOString() : null,
   }));
 
   return {
