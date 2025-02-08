@@ -4,7 +4,7 @@ A crowdfunding platform dedicated to advancing AI research projects. Fundura con
 ## About ⚡
 Fundura aims to bridge the gap between AI researchers and potential backers by providing a transparent and secure platform for research funding. Our platform enables researchers to showcase their projects and receive financial support from individuals and organizations interested in advancing AI technology.
 
-## Tech Stack 🛠️
+## Tech Stack (More to be added) 🛠️
 - **React** - Building a responsive and interactive user interface
 - **Stripe** - Secure handling of donations and funding transactions
 - **Clerk** - User authentication for researchers and supporters
