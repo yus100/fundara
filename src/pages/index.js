@@ -5,8 +5,7 @@ import Navbar from '../components/Navbar';
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home({ initialProjects }) {
-  // Use SWR for client-side fetching and revalidation
-  const { data, error } = useSWR('/api/projects', fetcher, {
+  const { data, error, mutate } = useSWR('/api/projects', fetcher, {
     fallbackData: { projects: initialProjects },
   });
 
@@ -14,6 +13,28 @@ export default function Home({ initialProjects }) {
   if (!data) return <div>Loading...</div>;
 
   const { projects } = data;
+
+  async function handleDonate(projectId) {
+    const amount = prompt('Enter donation amount:');
+    if (!amount) return;
+    try {
+      const res = await fetch('/api/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, amount }),
+      });
+      if (!res.ok) {
+        alert('Donation failed!');
+      } else {
+        alert('Donation successful!');
+        // Refresh projects data to show updated donation totals
+        mutate();
+      }
+    } catch (error) {
+      console.error('Donation error:', error);
+      alert('Donation error!');
+    }
+  }
 
   return (
     <div style={{ padding: '20px' }}>
@@ -84,11 +105,6 @@ export default function Home({ initialProjects }) {
       </div>
     </div>
   );
-
-  // Placeholder donation logic
-  function handleDonate(projectId) {
-    alert(`Donate button clicked for project ${projectId}`);
-  }
 }
 
 // Pre-render the page with data from MongoDB

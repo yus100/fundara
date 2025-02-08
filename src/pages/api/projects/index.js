@@ -1,20 +1,19 @@
 // pages/api/projects/index.js
 import clientPromise from '../../../lib/mongodb';
+import { getAuth } from '@clerk/nextjs/server';
 
 export default async function handler(req, res) {
   const client = await clientPromise;
-  const db = client.db('crowdfunding'); // Change 'crowdfunding' if needed
+  const db = client.db('crowdfunding'); // adjust if needed
 
   if (req.method === 'GET') {
     try {
       const projects = await db.collection('projects').find({}).toArray();
-
-      // Convert ObjectId to string for each project
       const projectsSerialized = projects.map((project) => ({
         ...project,
         _id: project._id.toString(),
+        createdAt: project.createdAt ? project.createdAt.toISOString() : null,
       }));
-
       res.status(200).json({ projects: projectsSerialized });
     } catch (error) {
       console.error('Failed to load projects:', error);
@@ -22,7 +21,12 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'POST') {
     try {
-      // Destructure expected fields from the request body
+      // Ensure the user is signed in
+      const { userId } = getAuth(req);
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       const {
         projectName,
         author,
@@ -34,7 +38,6 @@ export default async function handler(req, res) {
         moneyNeeded,
       } = req.body;
 
-      // Simple validation (you may want to add more robust validation)
       if (
         !projectName ||
         !author ||
@@ -43,28 +46,28 @@ export default async function handler(req, res) {
         !gpuHours ||
         !moneyNeeded
       ) {
-        return res
-          .status(400)
-          .json({ error: 'Missing required fields.' });
+        return res.status(400).json({ error: 'Missing required fields.' });
       }
 
-      // Construct the new project object. (Here, we set donated to 0.)
+      // Create new project and include the current user's ID
       const newProject = {
         title: projectName,
         author,
         orcid,
         description,
-        image: media, // For now, we expect a media URL.
+        image: media,
         hpcProvider,
         gpuHours: parseFloat(gpuHours),
         moneyNeeded: parseFloat(moneyNeeded),
-        donated: 0, // initial donation amount
+        donated: 0,
         goal: parseFloat(moneyNeeded),
         createdAt: new Date(),
+        creatorId: userId, // tie the project to the creator
       };
 
       const result = await db.collection('projects').insertOne(newProject);
       newProject._id = result.insertedId.toString();
+      newProject.createdAt = newProject.createdAt.toISOString();
 
       res.status(201).json(newProject);
     } catch (error) {
