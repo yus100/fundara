@@ -5,6 +5,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 
@@ -12,7 +13,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ClerkProvider>
       <SignedOut>
-        <SignInButton />
+        {/* <SignInButton /> */}
       </SignedOut>
       <SignedIn>
         <UserButton />
