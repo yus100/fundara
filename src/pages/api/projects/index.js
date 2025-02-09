@@ -68,6 +68,7 @@ export default async function handler(req, res) {
       const result = await db.collection('projects').insertOne(newProject);
       newProject._id = result.insertedId.toString();
       newProject.createdAt = newProject.createdAt.toISOString();
+      
 
       res.status(201).json(newProject);
     } catch (error) {

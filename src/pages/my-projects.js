@@ -2,11 +2,15 @@
 import Navbar from '../components/Navbar';
 import clientPromise from '../lib/mongodb';
 import { getAuth } from '@clerk/nextjs/server';
+import { useRouter } from 'next/router';
 
 export default function MyProjects({ projects }) {
+  const router = useRouter();
+
   return (
     <div style={{ padding: '20px' }}>
       <Navbar />
+
       <h1>My Projects</h1>
       {projects.length === 0 ? (
         <p>You have not created any projects.</p>
@@ -15,6 +19,7 @@ export default function MyProjects({ projects }) {
           {projects.map((project) => (
             <div
               key={project._id}
+              onClick={() => router.push(`/projects/${project._id}`)}
               style={{
                 border: '1px solid #ddd',
                 padding: '20px',
@@ -22,6 +27,7 @@ export default function MyProjects({ projects }) {
                 width: '300px',
                 borderRadius: '8px',
                 boxShadow: '2px 2px 6px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
               }}
             >
               <img
@@ -35,7 +41,7 @@ export default function MyProjects({ projects }) {
                 }}
               />
               <h2>{project.title}</h2>
-              <p>{project.description}</p>
+              <p>{project.description.slice(0, 100)}...</p>
             </div>
           ))}
         </div>

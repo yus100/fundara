@@ -1,6 +1,6 @@
 import {
   ClerkProvider,
-  SignInButton,
+  //SignInButton,
   SignedIn,
   SignedOut,
   UserButton,
@@ -11,9 +11,7 @@ import type { AppProps } from "next/app";
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ClerkProvider>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
+      <SignedOut>{/* <SignInButton /> */}</SignedOut>
       <SignedIn>
         <UserButton />
       </SignedIn>
