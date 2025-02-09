@@ -2,6 +2,7 @@
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import Navbar from '../components/Navbar';
+import TopProjectsCarousel from '../components/TopProjectsCarousel';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -49,72 +50,78 @@ export default function Home({ initialProjects }) {
   return (
     <div style={{ padding: '20px' }}>
       <Navbar />
-      <h1>Crowdfunding Projects</h1>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {projects.map((project) => (
-          <div
-            key={project._id}
-            onClick={() => handleCardClick(project._id)}
-            style={{
-              border: '1px solid #ddd',
-              padding: '20px',
-              margin: '10px',
-              width: '300px',
-              borderRadius: '8px',
-              boxShadow: '2px 2px 6px rgba(0,0,0,0.1)',
-              cursor: 'pointer',
-            }}
-          >
-            <img
-              src={project.image}
-              alt={project.title}
-              style={{
-                width: '100%',
-                height: '200px',
-                objectFit: 'cover',
-                borderRadius: '4px',
-              }}
-            />
-            <h2>{project.title}</h2>
-            <p>{project.description.slice(0, 100)}...</p>
-            <div style={{ margin: '10px 0' }}>
-              <div
-                style={{
-                  background: '#eee',
-                  width: '100%',
-                  height: '20px',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    background: '#76c7c0',
-                    width: `${(project.donated / project.goal) * 100}%`,
-                    height: '100%',
-                  }}
-                ></div>
-              </div>
-              <p style={{ fontSize: '0.9em', margin: '5px 0' }}>
-                ${project.donated} raised of ${project.goal}
-              </p>
-            </div>
-            {/* Donate button: stop propagation so clicking it doesn’t trigger card click */}
-            <button
-              onClick={(e) => handleDonate(e, project._id)}
-              style={{
-                padding: '10px 20px',
-                background: '#0070f3',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-              }}
+      <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-20">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+            <span className="inline-block mb-2 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent">
+              Accelerate Project Innovation
+            </span>
+            <span className="block mt-2 sm:mt-4 text-gray-900">
+              Through Direct Support
+            </span>
+          </h1>
+        </div>
+      </div>
+
+      <TopProjectsCarousel projects={projects} />
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {projects.map((project) => (
+            <div
+              key={project._id}
+              onClick={() => handleCardClick(project._id)}
+              className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer"
             >
-              Donate
-            </button>
-          </div>
-        ))}
+              <div className="aspect-[4/3] relative overflow-hidden">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="p-5">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-1">
+                  {project.title}
+                </h2>
+                
+                <p className="text-gray-600 mb-4 text-sm line-clamp-2">
+                  {project.description}
+                </p>
+
+                <div className="space-y-2 mb-4">
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width: `${Math.min((project.donated / project.goal) * 100, 100)}%`,
+                      }}
+                    ></div>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span className="font-medium">${project.donated.toLocaleString()}</span>
+                    <span>of ${project.goal.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDonate(e, project._id);
+                  }}
+                  className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium
+                           hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                           focus:ring-offset-2 transition-colors duration-200"
+                >
+                  Donate
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

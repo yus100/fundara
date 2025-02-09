@@ -16,8 +16,19 @@ Fundura aims to bridge the gap between AI researchers and potential backers by p
 - Detailed project tracking and updates
 - Transparent fund allocation system
 
+
 ## Project Status 📊
 This project is currently in the planning and initial development phase.
+
+## QUICK PEAK OF PROGRESS
+
+
+https://github.com/user-attachments/assets/c2b38935-df7f-429b-9e8a-3a4578b5f7f0
+
+
+
+
+
 
 ## Getting Started 🚀
 Setup instructions and documentation will be added as the project develops.
