@@ -36,6 +36,7 @@ export default async function handler(req, res) {
         hpcProvider,
         gpuHours,
         moneyNeeded,
+        solanaWallet,
       } = req.body;
 
       if (
@@ -62,7 +63,8 @@ export default async function handler(req, res) {
         donated: 0,
         goal: parseFloat(moneyNeeded),
         createdAt: new Date(),
-        creatorId: userId, // tie the project to the creator
+        creatorId: userId,
+        solanaWallet: solanaWallet || null,
       };
 
       const result = await db.collection('projects').insertOne(newProject);

@@ -150,8 +150,10 @@ export default function Home({ initialProjects }) {
                   >
                     Donate
                   </button>
-                  {/* On-chain donation button using Solana */}
-                  <DonateSolanaButton project={project} />
+                  {/* Only show Solana button if project has a solanaWallet */}
+                  {project.solanaWallet && (
+                    <DonateSolanaButton solanaWallet={project.solanaWallet} />
+                  )}
                 </div>
               </div>
             </div>

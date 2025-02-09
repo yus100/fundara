@@ -21,9 +21,6 @@ export default function NewProject() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-
-  // Handle file selection
-
   // Update form state as fields change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,10 +29,7 @@ export default function NewProject() {
   // On form submit, send a POST request to create a new project
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic validation - let's add some console.logs to debug
-    console.log('Form data being submitted:', formData);
-    
+    // Basic validation
     if (
       !formData.projectName.trim() ||
       !formData.author.trim() ||
@@ -48,33 +42,31 @@ export default function NewProject() {
       return;
     }
     setError('');
-
-    try {
-      // Create FormData object
-      const formDataToSend = new FormData();
   
+    // Create submission data with the wallet address only if it exists
+    const submissionData = {
+      ...formData,
+      solanaWallet: formData.solanaWallet || undefined, // Will be omitted if empty
+    };
+  
+    try {
       const res = await fetch('/api/projects', {
         method: 'POST',
-        // Remove the Content-Type header - FormData will set it automatically
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${await window.Clerk.session.getToken()}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
   
       if (!res.ok) {
         const errorData = await res.json();
+        console.log('Error response:', errorData);
         setError(errorData.error || 'Something went wrong.');
         return;
       }
   
-      //response data
-      const data = await res.json();
-      
-      // Redirect to home page with a string path
       router.push('/');
-      
-      
     } catch (err) {
       console.error('Error creating project:', err);
       setError('Error creating project.');
@@ -154,7 +146,7 @@ export default function NewProject() {
           <label htmlFor="media" className="block text-sm font-medium text-gray-700">
             Media Upload
           </label>
-          
+         
         </div>
 
         <div className="space-y-1">

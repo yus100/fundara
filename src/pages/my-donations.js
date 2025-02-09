@@ -32,8 +32,17 @@ export default function MyDonations({ donationsWithProject }) {
               }}
             >
               <h2>{donation.project?.title || 'Unknown Project'}</h2>
-              <p>Donated: ${donation.amount}</p>
+              <p>
+                Donated: {donation.type === 'solana' ? 
+                  `${donation.amount} SOL` : 
+                  `$${donation.amount}`}
+              </p>
               <p>{donation.project?.description}</p>
+              {donation.type === 'solana' && (
+                <p style={{ fontSize: '0.8em', color: '#666' }}>
+                  Transaction: {donation.transactionSignature?.slice(0, 8)}...
+                </p>
+              )}
             </div>
           ))}
         </div>

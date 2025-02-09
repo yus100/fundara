@@ -1,18 +1,26 @@
 // components/DonateSolanaButton.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, RpcResponseAndContext, SignatureResult } from '@solana/web3.js';
 
 interface DonateSolanaButtonProps {
   // The recipient Solana wallet address (as a string) from your project document.
-  projectWallet: string;
+  solanaWallet: string;
   // An optional default donation amount in SOL.
   defaultDonationAmount?: number;
+  projectId: string;
+}
+
+interface TransactionStatus {
+  value: {
+    err: any;
+  };
 }
 
 const DonateSolanaButton: React.FC<DonateSolanaButtonProps> = ({
-  projectWallet,
+  solanaWallet,
   defaultDonationAmount = 0.1,
+  projectId,
 }) => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
@@ -29,6 +37,7 @@ const DonateSolanaButton: React.FC<DonateSolanaButtonProps> = ({
   // Handle the form submission to create and send the transaction.
   const handleDonate = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("Solana wallet value:", solanaWallet);
     setErrorMessage('');
     if (!publicKey) {
       setErrorMessage('Please connect your wallet first.');
@@ -38,34 +47,73 @@ const DonateSolanaButton: React.FC<DonateSolanaButtonProps> = ({
       setErrorMessage('Please enter a valid donation amount.');
       return;
     }
+    try {
+      // Validate the wallet address
+      new PublicKey(solanaWallet);
+    } catch (error) {
+      setErrorMessage('Invalid wallet address');
+      return;
+    }
     setIsSending(true);
     try {
-      // Create a transaction that transfers donationAmount SOL (converted to lamports)
+      // Create and send transaction
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: publicKey,
-          toPubkey: new PublicKey(projectWallet),
+          toPubkey: new PublicKey(solanaWallet),
           lamports: donationAmount * LAMPORTS_PER_SOL,
         })
       );
 
-      // Send the transaction using the connected wallet.
+      const latestBlockhash = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = latestBlockhash.blockhash;
+      
       const signature = await sendTransaction(transaction, connection);
-      // Wait for confirmation.
-      await connection.confirmTransaction(signature, 'processed');
+      
+      // Save donation immediately after transaction is sent
+      try {
+        const response = await fetch('/api/donations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: donationAmount,
+            signature,
+            sender: publicKey.toString(),
+            recipient: solanaWallet,
+            projectId: projectId,
+            status: 'pending' // Add status to track transaction state
+          }),
+        });
 
-      // Optionally, call your backend API to update the MongoDB donation record.
-      // Example:
-      // await fetch('/api/donations/solana', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ signature, donationAmount, projectWallet }),
-      // });
+        if (!response.ok) {
+          console.error('Failed to save donation record');
+        }
+      } catch (error) {
+        console.error('Error saving donation:', error);
+      }
 
-      alert(`Donation successful! Transaction signature: ${signature}`);
+      // Try to confirm but don't block on it
+      connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+      }, 'confirmed').then(confirmation => {
+        console.log('Transaction confirmed:', confirmation);
+      }).catch(error => {
+        console.error('Confirmation error:', error);
+      });
+
+      alert(`Donation sent! Transaction signature: ${signature}`);
+      return;
     } catch (error) {
       console.error('Error sending donation:', error);
-      setErrorMessage('Donation failed! Please try again.');
+      setErrorMessage(
+        error instanceof Error 
+          ? `Donation failed: ${error.message}` 
+          : 'Donation failed! Please try again.'
+      );
     } finally {
       setIsSending(false);
     }
