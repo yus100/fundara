@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import Navbar from '../components/Navbar';
 import { getStripe } from "@/utils/stripe";
-import { handlePaymentError } from "@/utils/errorHandling";
 import TopProjectsCarousel from '../components/TopProjectsCarousel';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
@@ -33,7 +32,6 @@ export default function Home({ initialProjects }) {
     if (!amount) return;
 
     try {
-      setErrorMessage(null);
       // Create checkout session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -56,7 +54,7 @@ export default function Home({ initialProjects }) {
       });
     
       if (result.error) {
-        setErrorMessage(handlePaymentError(result.error));
+        alert("Stripe checkout error");
       } else {
         // Only update database after successful payment in stripe
         const dbResponse = await fetch('/api/donations', {
@@ -73,8 +71,7 @@ export default function Home({ initialProjects }) {
         mutate(); // Refresh the projects data
       }
     } catch (error) {
-      setErrorMessage(handlePaymentError(error));
-      alert('Payment Error');
+      alert(`Payment Error, ${error.name}$`);
     }
   }
 
