@@ -1,10 +1,15 @@
 // pages/index.js
 import useSWR from 'swr';
 import Navbar from '../components/Navbar';
+import { getStripe } from "@/utils/stripe";
+import { useState } from "react";
+import { handlePaymentError } from "@/utils/errorHandling";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home({ initialProjects }) {
+  const [errorMessage, setErrorMessage] = useState(null);
+
   const { data, error, mutate } = useSWR('/api/projects', fetcher, {
     fallbackData: { projects: initialProjects },
   });
@@ -14,25 +19,53 @@ export default function Home({ initialProjects }) {
 
   const { projects } = data;
 
-  async function handleDonate(projectId) {
+  async function handleDonate(projectId) {   
     const amount = prompt('Enter donation amount:');
     if (!amount) return;
+
     try {
-      const res = await fetch('/api/donations', {
+      setErrorMessage(null);
+      // Create checkout session
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId, amount }),
+        body: JSON.stringify({ 
+          projectId, 
+          amount: Number(amount), // Ensure amount is a number
+        }),
       });
-      if (!res.ok) {
-        alert('Donation failed!');
+
+      const { sessionId } = await response.json(); // Specific backend payment instance
+      
+      const stripe = await getStripe();
+      if (!stripe) {
+        throw new Error('Stripe failed to load');
+      }
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: sessionId,
+      });
+    
+      if (result.error) {
+        setErrorMessage(handlePaymentError(result.error));
       } else {
-        alert('Donation successful!');
-        // Refresh projects data to show updated donation totals
-        mutate();
+        // Only update database after successful payment in stripe
+        const dbResponse = await fetch('/api/donations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId, amount }),
+        });
+  
+        if (!dbResponse.ok) {
+          throw new Error('Failed to record donation');
+        }
+  
+        alert('Donation successful using stripe!');
+        mutate(); // Refresh the projects data
       }
     } catch (error) {
-      console.error('Donation error:', error);
-      alert('Donation error!');
+      setErrorMessage(handlePaymentError(error));
+      alert('Payment Error');
     }
   }
 
@@ -40,6 +73,13 @@ export default function Home({ initialProjects }) {
     <div style={{ padding: '20px' }}>
       <Navbar />
       <h1>Crowdfunding Projects</h1>
+
+      {/* Error message */}
+      {errorMessage && (
+        <div className="text-red-500 text-sm bg-red-100/10 p-3 rounded mb-4">
+          {errorMessage}
+        </div>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         {projects.map((project) => (
           <div

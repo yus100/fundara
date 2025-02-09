@@ -3,10 +3,10 @@ import {
   SignInButton,
   SignedIn,
   SignedOut,
-  UserButton
-} from '@clerk/nextjs'
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+  UserButton,
+} from "@clerk/nextjs";
+import "../styles/globals.css";
+import type { AppProps } from "next/app";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -19,7 +19,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </SignedIn>
       <Component {...pageProps} />
     </ClerkProvider>
-  )
+  );
 }
 
-export default MyApp
+export default MyApp;

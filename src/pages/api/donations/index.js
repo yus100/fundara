@@ -9,18 +9,13 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { userId } = getAuth(req);
-      if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const { projectId, amount } = req.body;
-      if (!projectId || !amount) {
+      const { projectId, amount, userId } = req.body;
+      if (!projectId || !amount || !userId) {
         return res.status(400).json({ error: 'Missing required fields.' });
       }
 
       const donation = {
-        projectId,
+        projectId: projectId,
         donorId: userId,
         amount: parseFloat(amount),
         createdAt: new Date(),
@@ -29,15 +24,19 @@ export default async function handler(req, res) {
       // Insert donation record into a dedicated collection
       const result = await db.collection('donations').insertOne(donation);
 
-      // Update the project's donated amount
+      if (!result.acknowledged) {
+        throw new Error('Failed to insert donation.');
+      }
+  
+      // Assuming projectId is a string representation of ObjectId
       await db.collection('projects').updateOne(
         { _id: new ObjectId(projectId) },
         { $inc: { donated: parseFloat(amount) } }
       );
-
+  
       donation._id = result.insertedId.toString();
       donation.createdAt = donation.createdAt.toISOString();
-
+  
       res.status(201).json(donation);
     } catch (error) {
       console.error('Failed to record donation:', error);
