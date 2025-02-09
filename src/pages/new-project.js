@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import FileUpload from '../components/fileUpload.tsx';
 export default function NewProject() {
+
+
   const [formData, setFormData] = useState({
     projectName: '',
     author: '',
@@ -19,13 +21,8 @@ export default function NewProject() {
 
 
   // Handle file selection
-  const handleFileSelect = (file) => {
-    setFormData(prev => ({
-      ...prev,
-      media: file ? file : ''
-    }));
-  };
 
+  
 
   // Update form state as fields change
   const handleChange = (e) => {
@@ -35,7 +32,7 @@ export default function NewProject() {
   // On form submit, send a POST request to create a new project
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Basic validation
     if (
       !formData.projectName ||
@@ -49,44 +46,25 @@ export default function NewProject() {
       return;
     }
     setError('');
-
-    try {
-      // Create FormData object
-      const formDataToSend = new FormData();
-      
-
-      Object.keys(formData).forEach(key => {
-        if (key === 'media' && formData[key] instanceof File) {
-          // Handle file upload
-          formDataToSend.append('media', formData[key]);
-        } else {
-          // Handle other form fields
-          formDataToSend.append(key, formData[key].toString());
-        }
-      });
   
+    try {
       const res = await fetch('/api/projects', {
         method: 'POST',
-        // Remove the Content-Type header - FormData will set it automatically
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${await window.Clerk.session.getToken()}`,
         },
-        body: formDataToSend,
+        body: JSON.stringify(formData),
       });
   
       if (!res.ok) {
         const errorData = await res.json();
+        console.log('Error response:', errorData);
         setError(errorData.error || 'Something went wrong.');
         return;
       }
   
-      //response data
-      const data = await res.json();
-      
-      // Redirect to home page with a string path
       router.push('/');
-      
-      
     } catch (err) {
       console.error('Error creating project:', err);
       setError('Error creating project.');
@@ -166,10 +144,7 @@ export default function NewProject() {
           <label htmlFor="media" className="block text-sm font-medium text-gray-700">
             Media Upload
           </label>
-          <FileUpload 
-            onFileSelect={handleFileSelect}
-            maxSizeInMB={5}
-          />
+         
         </div>
 
         <div className="space-y-1">
