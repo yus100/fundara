@@ -48,23 +48,8 @@ export default function Home({ initialProjects }) {
 
   return (
     <div style={{ padding: '20px' }}>
-
       <Navbar />
-
-
-      <div className="flex flex-col items-center justify-center mb-8"/>
-       <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight tracking-tight align-content: center">
-       <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-            Accelerate Project Innovation
-      </span>
-      <br className="hidden md:block" />
-      <span className="text-gray-900">Through Direct Support</span>
-      </h1> 
-      <div/>
-
-
-
-
+      <h1>Crowdfunding Projects</h1>
       <div style={{ display: 'flex', flexWrap: 'wrap' }}>
         {projects.map((project) => (
           <div
@@ -150,3 +135,4 @@ export async function getServerSideProps() {
     props: { initialProjects: projectsSerialized },
   };
 }
+
