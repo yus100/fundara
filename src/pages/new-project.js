@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import FileUpload from '../components/fileUpload.tsx';
+import { useWallet } from '@solana/wallet-adapter-react';
+
 export default function NewProject() {
+  const { publicKey } = useWallet();
   const [formData, setFormData] = useState({
     projectName: '',
     author: '',
@@ -13,19 +16,13 @@ export default function NewProject() {
     hpcProvider: 'GCP',
     gpuHours: '',
     moneyNeeded: '',
+    solanaWallet: '',
   });
   const [error, setError] = useState('');
   const router = useRouter();
 
 
   // Handle file selection
-  const handleFileSelect = (file) => {
-    setFormData(prev => ({
-      ...prev,
-      media: file ? file : ''
-    }));
-  };
-
 
   // Update form state as fields change
   const handleChange = (e) => {
@@ -36,12 +33,14 @@ export default function NewProject() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
+    // Basic validation - let's add some console.logs to debug
+    console.log('Form data being submitted:', formData);
+    
     if (
-      !formData.projectName ||
-      !formData.author ||
-      !formData.description ||
-      !formData.hpcProvider ||
+      !formData.projectName.trim() ||
+      !formData.author.trim() ||
+      !formData.description.trim() ||
+      !formData.hpcProvider.trim() ||
       !formData.gpuHours ||
       !formData.moneyNeeded
     ) {
@@ -53,17 +52,6 @@ export default function NewProject() {
     try {
       // Create FormData object
       const formDataToSend = new FormData();
-      
-
-      Object.keys(formData).forEach(key => {
-        if (key === 'media' && formData[key] instanceof File) {
-          // Handle file upload
-          formDataToSend.append('media', formData[key]);
-        } else {
-          // Handle other form fields
-          formDataToSend.append(key, formData[key].toString());
-        }
-      });
   
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -71,7 +59,7 @@ export default function NewProject() {
         headers: {
           'Authorization': `Bearer ${await window.Clerk.session.getToken()}`,
         },
-        body: formDataToSend,
+        body: JSON.stringify(formData),
       });
   
       if (!res.ok) {
@@ -166,10 +154,7 @@ export default function NewProject() {
           <label htmlFor="media" className="block text-sm font-medium text-gray-700">
             Media Upload
           </label>
-          <FileUpload 
-            onFileSelect={handleFileSelect}
-            maxSizeInMB={5}
-          />
+          
         </div>
 
         <div className="space-y-1">
@@ -221,6 +206,31 @@ export default function NewProject() {
               className="w-full rounded-lg border-gray-300 border p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm"
               required
             />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="solanaWallet" className="block text-sm font-medium text-gray-700">
+            Solana Wallet
+          </label>
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              id="solanaWallet"
+              name="solanaWallet"
+              value={formData.solanaWallet}
+              onChange={handleChange}
+              className="flex-1 rounded-lg border-gray-300 border p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out shadow-sm"
+            />
+            {publicKey && (
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, solanaWallet: publicKey.toBase58() }))}
+                className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+              >
+                Use My Phantom Wallet
+              </button>
+            )}
           </div>
         </div>
 

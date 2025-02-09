@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import Navbar from '../components/Navbar';
 import { getStripe } from "@/utils/stripe";
 import TopProjectsCarousel from '../components/TopProjectsCarousel';
+import DonateSolanaButton from '../components/DonateSolanaButton';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -135,17 +136,23 @@ export default function Home({ initialProjects }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDonate(e, project._id);
-                  }}
-                  className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium
-                           hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
-                           focus:ring-offset-2 transition-colors duration-200"
-                >
-                  Donate
-                </button>
+                {/* Donation buttons container */}
+                <div className="flex gap-2 flex-wrap">
+                  {/* Off-chain donation button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDonate(e, project._id);
+                    }}
+                    className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium
+                             hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                             focus:ring-offset-2 transition-colors duration-200"
+                  >
+                    Donate
+                  </button>
+                  {/* On-chain donation button using Solana */}
+                  <DonateSolanaButton project={project} />
+                </div>
               </div>
             </div>
           ))}

@@ -68,3 +68,18 @@
     margin-bottom: 2rem;
   }
   
+  /* Custom styles for Phantom wallet button */
+  .phantom-button {
+    background-color: #4F46E5 !important;
+    transition: background-color 0.2s ease !important;
+  }
+  
+  .phantom-button:hover {
+    background-color: #4338CA !important;
+  }
+  
+  /* Ensure wallet adapter modal appears above other elements */
+  .wallet-adapter-modal {
+    z-index: 50;
+  }
+  
