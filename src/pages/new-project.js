@@ -1,5 +1,5 @@
 // pages/new-project.js
-import { useState } from 'react';
+import React, {useState, useEffect} from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import FileUpload from '../components/fileUpload.tsx';
@@ -11,17 +11,25 @@ export default function NewProject() {
     author: '',
     orcid: '',
     description: '',
-    media: '',
+    media: null,
     hpcProvider: 'GCP',
     gpuHours: '',
     moneyNeeded: '',
   });
   const [error, setError] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
   const router = useRouter();
 
 
   // Handle file selection
-
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create a preview URL for the image
+      setImagePreview(URL.createObjectURL(file));
+      setFormData({ ...formData, media: file });
+    }
+  };
   
 
   // Update form state as fields change
@@ -48,13 +56,27 @@ export default function NewProject() {
     setError('');
   
     try {
+
+
+        // Create FormData object to handle file upload
+        const submitData = new FormData();
+      
+        // Append all form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'media' && formData[key]) {
+          submitData.append('media', formData[key]);
+        } else {
+          submitData.append(key, formData[key]);
+        }
+      });
+
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          // 'Content-Type': 'application/json',
           'Authorization': `Bearer ${await window.Clerk.session.getToken()}`,
         },
-        body: JSON.stringify(formData),
+        body: submitData,
       });
   
       if (!res.ok) {
@@ -70,6 +92,16 @@ export default function NewProject() {
       setError('Error creating project.');
     }
   };
+
+
+  React.useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
 
   return (
 <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
@@ -141,11 +173,32 @@ export default function NewProject() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="media" className="block text-sm font-medium text-gray-700">
-            Media Upload
-          </label>
-         
-        </div>
+              <label htmlFor="media" className="block text-sm font-medium text-gray-700">
+                Media Upload
+              </label>
+              <input
+                type="file"
+                id="media"
+                name="media"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100"
+              />
+              {imagePreview && (
+                <div className="mt-2">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-w-xs rounded-lg shadow-sm"
+                  />
+                </div>
+              )}
+            </div>
 
         <div className="space-y-1">
           <label htmlFor="hpcProvider" className="block text-sm font-medium text-gray-700">
