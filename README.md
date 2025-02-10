@@ -1,5 +1,5 @@
 # Fundura
-A crowdfunding platform dedicated to advancing AI research projects. Fundura connects innovative AI researchers with supporters who want to contribute to the future of artificial intelligence.
+A crowdfunding platform dedicated to advancing AI research projects. Fundura connects innovative AI researchers with supporters who want to contribute to the future of artificial intelligence and is built with the Solana blockchain.
 
 ## About ⚡
 Fundura aims to bridge the gap between AI researchers and potential backers by providing a transparent and secure platform for research funding. Our platform enables researchers to showcase their projects and receive financial support from individuals and organizations interested in advancing AI technology.
