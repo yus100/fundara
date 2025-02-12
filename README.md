@@ -1,4 +1,4 @@
-# Fundura
+# Fundara
 A crowdfunding platform dedicated to advancing AI research projects. Fundura connects innovative AI researchers with supporters who want to contribute to the future of artificial intelligence and is built with the Solana blockchain.
 
 ## About ⚡
