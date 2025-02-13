@@ -8,6 +8,7 @@ Fundura aims to bridge the gap between AI researchers and potential backers by p
 - **React** - Building a responsive and interactive user interface
 - **Stripe** - Secure handling of donations and funding transactions
 - **Clerk** - User authentication for researchers and supporters
+- **Solana** - Integrated with Phantom Wallet to send SOL
 
 ## Features 🎯
 - Secure user authentication for researchers and supporters
